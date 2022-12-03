@@ -16,8 +16,8 @@ if __name__ == "__main__":
         name="energy-es",
         version=version,
         description=(
-            "Desktop application that displays the energy price for the "
-            "current day in Spain."
+            "Desktop application that displays the hourly energy prices for "
+            "the current day in Spain."
         ),
         author="Jose A. Jimenez",
         author_email="jajimenezcarm@gmail.com",
