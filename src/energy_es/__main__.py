@@ -1,4 +1,4 @@
-"""Energy-ES - Main module"""
+"""Energy-ES - Main module."""
 
 from energy_es import main
 
