@@ -10,9 +10,7 @@ if __name__ == "__main__":
         long_desc = f.read()
 
     with open("requirements.txt") as f:
-        requirements = f.readlines()
-
-    requirements = [i.replace("\n", "") for i in requirements]
+        requirements = [i.replace("\n", "") for i in f.readlines()]
 
     st.setup(
         name="energy-es",
