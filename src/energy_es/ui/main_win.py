@@ -1,7 +1,9 @@
 """Energy-ES - User Interface - Main Window."""
 
 from tkinter import Tk
-from tkinter.ttk import Frame, Label
+from tkinter.ttk import Frame
+
+from energy_es.ui.chart import get_chart_widget
 
 
 class MainFrame(Frame):
@@ -11,11 +13,12 @@ class MainFrame(Frame):
         """Class initializer."""
         super().__init__(root)
         self.create_widgets()
+        self.root = root
 
     def create_widgets(self):
         """Create the frame widgets."""
-        self.title = Label(self, text="Energy prices in Spain")
-        self.title.pack(side="top")
+        self.chart = get_chart_widget(self)
+        self.chart.pack(side="top")
 
 
 class MainWindow(Tk):
@@ -36,8 +39,8 @@ class MainWindow(Tk):
         screen_height = self.winfo_screenheight()
 
         # Window size
-        widget_width = 320
-        widget_height = 240
+        widget_width = 700
+        widget_height = 480
 
         # Border (space between window and widget) size
         border_width = self.winfo_rootx() - self.winfo_x()
@@ -51,6 +54,7 @@ class MainWindow(Tk):
         y = (screen_height // 2) - (window_height // 2)
 
         self.geometry(f"{widget_width}x{widget_height}+{x}+{y}")
+        self.minsize(widget_width, widget_height)
 
     def create_widgets(self):
         """Create the window widgets."""
