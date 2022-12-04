@@ -1,7 +1,7 @@
 """Energy-ES - User Interface - Main Window."""
 
 from tkinter import Tk
-from tkinter.ttk import Frame
+from tkinter.ttk import Frame, Label
 
 from energy_es.ui.chart import get_chart_widget
 
@@ -17,8 +17,23 @@ class MainFrame(Frame):
 
     def create_widgets(self):
         """Create the frame widgets."""
-        self.chart = get_chart_widget(self)
-        self.chart.pack(side="top")
+        self.chart, min_text, max_text = get_chart_widget(self)
+        self.chart.pack(side="top", fill="x")
+
+        self.summary = Frame(self)
+        self.summary.pack(side="top", fill="x", padx=5, pady=5)
+
+        self.min_lab_1 = Label(self.summary, text="Minimum price:")
+        self.min_lab_1.grid(row=0, column=0, padx=(0, 5), sticky="w")
+
+        self.min_lab_2 = Label(self.summary, text=min_text)
+        self.min_lab_2.grid(row=0, column=1, sticky="w")
+
+        self.max_lab_1 = Label(self.summary, text="Maximum price:")
+        self.max_lab_1.grid(row=1, column=0, padx=(0, 5), sticky="w")
+
+        self.max_lab_2 = Label(self.summary, text=max_text)
+        self.max_lab_2.grid(row=1, column=1, sticky="w")
 
 
 class MainWindow(Tk):
