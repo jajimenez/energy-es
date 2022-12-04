@@ -33,10 +33,12 @@ if __name__ == "__main__":
         python_requires=">=3.9.0",
         install_requires=requirements,
         packages=[
-            "energy_es"
+            "energy_es",
+            "energy_es.ui"
         ],
         package_dir={
-            "energy_es": "src/energy_es"
+            "energy_es": "src/energy_es",
+            "energy_es.ui": "src/energy_es/ui"
         },
         entry_points={
             "console_scripts": [
