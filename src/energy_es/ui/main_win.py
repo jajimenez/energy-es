@@ -27,8 +27,6 @@ class MainWindow(Tk):
 
         self.title("Energy-ES")
         self.set_geometry()
-        self.minsize(width=320, height=240)
-
         self.create_widgets()
 
     def set_geometry(self):
