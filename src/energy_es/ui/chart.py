@@ -36,17 +36,14 @@ def get_chart_image() -> Image.Image:
 
     # Create chart
     fig, ax = plt.subplots(figsize=(7, 3))
+    fig.suptitle(f"Spot market price in €/MWh in Spain for {d}", y=0.94)
 
+    ax.set_title("Source: Red Electrica", fontdict={"fontsize": 10})
     ax.plot(x, y, marker="o")
     ax.scatter([min_x], [min_y], c="#00d800", zorder=2)
     ax.scatter([max_x], [max_y], c="#ff0000", zorder=2)
 
-    ax.set(
-        title=f"Spot market price in €/MWh in Spain for {d}",
-        xlabel="Hour",
-        ylabel="€/MWh"
-    )
-
+    ax.set(xlabel="Hour", ylabel="€/MWh")
     ax.grid()
 
     plt.xticks(rotation=45, ha="right", rotation_mode="anchor")
