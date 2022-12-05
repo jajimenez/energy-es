@@ -18,7 +18,7 @@ def _get_chart_image(dt: date, prices: list[dict]) -> Image.Image:
     :return: Chart image.
     """
     # Format date
-    dt = dt.strftime(f"%a {dt.day} %b %Y")
+    dt = dt.strftime(f"%a %b {dt.day} %Y")
 
     # Create X axis values
     x = list(map(lambda x: x["hour"], prices))
