@@ -40,6 +40,9 @@ if __name__ == "__main__":
             "energy_es": "src/energy_es",
             "energy_es.ui": "src/energy_es/ui"
         },
+        package_data={
+            "energy_es.ui": ["images/*.ico"]
+        },
         entry_points={
             "console_scripts": [
                 "energy-es=energy_es:main"

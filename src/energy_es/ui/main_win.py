@@ -1,8 +1,9 @@
 """Energy-ES - User Interface - Main Window."""
 
+from os.path import join, dirname
 from datetime import date
 
-from tkinter import Tk, Event
+from tkinter import Tk, Image, Event
 from tkinter.ttk import Frame, Label, Combobox
 
 from energy_es.data import PricesManager
@@ -16,14 +17,11 @@ class MainFrame(Frame):
         """Class initializer."""
         super().__init__(root)
 
-        self.bind("<Map>", self.on_load)
-        self.update_idletasks()
+        self.root = root
+        self.load_data()
 
-    def on_load(self, event: Event):
-        """Run logic when the frame is loaded.
-
-        :param event: Event object.
-        """
+    def load_data(self):
+        """Load the data and create the frame widgets."""
         self._dt = date.today()
 
         try:
@@ -41,6 +39,10 @@ class MainFrame(Frame):
         # Chart widget
         self.chart = get_chart_widget(self._dt, self._prices, self)
         self.chart.pack(side="top", fill="x")
+
+        # We need to reset the window icon as adding the chart sets the icon to
+        # a Matplotlib icon.
+        self.root.set_icon()
 
         # Summary widget
         self.summary = Frame(self)
@@ -117,8 +119,23 @@ class MainWindow(Tk):
         super().__init__(*args, **kwargs)
 
         self.title("Energy-ES")
+        self.set_icon()
         self.set_geometry()
         self.create_widgets()
+
+    def set_icon(self):
+        """Set the window icon.
+
+        This function may work or not depending on the operating system.
+        """
+        img_dir = join(dirname(__file__), "images")
+        logo_path = join(img_dir, "logo.png")
+
+        try:
+            img = Image("photo", file=logo_path)
+            self.wm_iconphoto(True, img)
+        except Exception:
+            pass
 
     def set_geometry(self):
         """Set the geometry (size and position) of the window."""
