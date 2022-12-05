@@ -6,3 +6,5 @@ the current day in Spain. The data is provided by the API of Red Electrica.
 - Author: Jose A. Jimenez (jajimenezcarm@gmail.com)
 - License: MIT License
 - Repository: https://github.com/jajimenez/energy-es
+
+![Screenshot](images/screenshot.png)
