@@ -1,53 +1,46 @@
 """Energy-ES - User Interface - Chart."""
 
 from io import BytesIO
+from datetime import date
 
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image, ImageTk
 from tkinter.ttk import Widget, Label
 
-from energy_es.data import get_prices
 
-
-ChartImage = tuple[Image.Image, str, float, str, float]
-ChartWidget = tuple[Widget, str, float, str, float]
-
-
-def get_chart_image() -> tuple[Image.Image, str, str]:
+def _get_chart_image(dt: date, prices: list[dict]) -> Image.Image:
     """Return the chart image.
 
-    :return: Tuple containing the image, information about the minimum value
-    and information about the maximum value.
+    :param dt: Date of the prices.
+    :param prices: List of dictionaries, where each dictionary contains the
+    "hour" (string) and "value" (float) keys.
+    :return: Chart image.
     """
-    # Get prices
-    prices = get_prices()
-
-    # Get current day
-    d = prices[0]["datetime"]
-    d = d.strftime(f"%a, {d.day} %b %Y")
+    # Format date
+    dt = dt.strftime(f"%a {dt.day} %b %Y")
 
     # Create X axis values
-    x = list(map(lambda x: x["datetime"].strftime("%H:%M"), prices))
+    x = list(map(lambda x: x["hour"], prices))
     x = np.array(x)
 
     # Create Y axis values
     y = list(map(lambda x: x["value"], prices))
     y = np.array(y)
 
-    # Get minimum price
-    min_y = y.min()
-    min_x = x[y.argmin()]
-    min_text = f"{min_x}, {min_y} €/MWh"
+    # Minimum price
+    min_price = min(prices, key=lambda x: x["value"])
+    min_x = min_price["hour"]
+    min_y = min_price["value"]
 
-    # Get maximum price
-    max_y = y.max()
-    max_x = x[y.argmax()]
-    max_text = f"{max_x}, {max_y} €/MWh"
+    # Maximum price
+    max_price = max(prices, key=lambda x: x["value"])
+    max_x = max_price["hour"]
+    max_y = max_price["value"]
 
     # Create chart
     fig, ax = plt.subplots(figsize=(7, 3))
-    fig.suptitle(f"Spot market price in €/MWh in Spain for {d}", y=0.94)
+    fig.suptitle(f"Spot market price in €/MWh in Spain for {dt}", y=0.94)
 
     ax.set_title("Source: Red Electrica", fontdict={"fontsize": 10})
     ax.plot(x, y, marker="o")
@@ -65,16 +58,21 @@ def get_chart_image() -> tuple[Image.Image, str, str]:
     fig.savefig(buf)
     buf.seek(0)
 
-    return Image.open(buf), min_text, max_text
+    return Image.open(buf)
 
 
-def get_chart_widget(root: Widget = None) -> tuple[Widget, str, str]:
+def get_chart_widget(
+    dt: date, prices: list[dict], root: Widget = None
+) -> Widget:
     """Return the chart widget.
 
-    :return: Tuple containing the widget, information about the minimum value
-    and information about the maximum value.
+    :param dt: Date of the prices.
+    :param prices: List of dictionaries, where each dictionary contains the
+    "hour" (string) and "value" (float) keys.
+    :param root: Root widget.
+    :return: Chart widget.
     """
-    img, min_text, max_text = get_chart_image()
+    img = _get_chart_image(dt, prices)
     img = ImageTk.PhotoImage(img)
     chart = Label(root, image=img)
 
@@ -82,4 +80,4 @@ def get_chart_widget(root: Widget = None) -> tuple[Widget, str, str]:
     # collector deletes it.
     chart.image = img
 
-    return chart, min_text, max_text
+    return chart

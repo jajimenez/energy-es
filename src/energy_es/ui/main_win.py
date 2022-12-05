@@ -1,8 +1,11 @@
 """Energy-ES - User Interface - Main Window."""
 
-from tkinter import Tk
-from tkinter.ttk import Frame, Label
+from datetime import date
 
+from tkinter import Tk, Event
+from tkinter.ttk import Frame, Label, Combobox
+
+from energy_es.data import PricesManager
 from energy_es.ui.chart import get_chart_widget
 
 
@@ -12,28 +15,91 @@ class MainFrame(Frame):
     def __init__(self, root=None):
         """Class initializer."""
         super().__init__(root)
+
+        self.bind("<Map>", self.on_load)
+        self.update_idletasks()
+
+    def on_load(self, event: Event):
+        """Run logic when the frame is loaded.
+
+        :param event: Event object.
+        """
         self.create_widgets()
-        self.root = root
 
     def create_widgets(self):
         """Create the frame widgets."""
-        self.chart, min_text, max_text = get_chart_widget(self)
+        # Data
+        pm = PricesManager()
+
+        dt = date.today()
+        self._prices = pm.get_prices()
+        self._min_price = pm.get_min_price()
+        self._max_price = pm.get_max_price()
+
+        # Chart widget
+        self.chart = get_chart_widget(dt, self._prices, self)
         self.chart.pack(side="top", fill="x")
 
+        # Summary widget
         self.summary = Frame(self)
-        self.summary.pack(side="top", fill="x", padx=5, pady=5)
+        self.summary.pack(side="top", fill="x", padx=10, pady=5)
 
-        self.min_lab_1 = Label(self.summary, text="Minimum price:")
-        self.min_lab_1.grid(row=0, column=0, padx=(0, 5), sticky="w")
+        # Minimum price widgets
+        self.min_1 = Label(self.summary, text="Minimum price:")
+        self.min_1.grid(row=0, column=0, sticky="w")
 
-        self.min_lab_2 = Label(self.summary, text=min_text)
-        self.min_lab_2.grid(row=0, column=1, sticky="w")
+        min_hour = self._min_price["hour"]
+        min_value = self._min_price["value"]
+        min_text = f"{min_hour}, {min_value} €/MWh"
 
-        self.max_lab_1 = Label(self.summary, text="Maximum price:")
-        self.max_lab_1.grid(row=1, column=0, padx=(0, 5), sticky="w")
+        self.min_2 = Label(self.summary, text=min_text)
+        self.min_2.grid(row=0, column=1, padx=(5, 0), sticky="w")
 
-        self.max_lab_2 = Label(self.summary, text=max_text)
-        self.max_lab_2.grid(row=1, column=1, sticky="w")
+        # Maximum price widgets
+        self.max_1 = Label(self.summary, text="Maximum price:")
+        self.max_1.grid(row=1, column=0, sticky="w")
+
+        max_hour = self._max_price["hour"]
+        max_value = self._max_price["value"]
+        max_text = f"{max_hour}, {max_value} €/MWh"
+
+        self.max_2 = Label(self.summary, text=max_text)
+        self.max_2.grid(row=1, column=1, padx=(5, 0), sticky="w")
+
+        # Widgets for the price by hour
+        self.hour_1 = Label(self.summary, text="Price by hour:")
+
+        self.hour_1.grid(
+            row=2, column=0, columnspan=2, pady=(10, 0), sticky="w"
+        )
+
+        hours_values = [str.zfill(str(i), 2) + ":00" for i in range(24)]
+
+        self.hours = Combobox(
+            self.summary, state="readonly", values=hours_values, width=10
+        )
+
+        self.hours.bind("<<ComboboxSelected>>", self.on_hour_selected)
+        self.hours.grid(row=3, column=0, sticky="w")
+
+        self.hour_2 = Label(self.summary, text="")
+        self.hour_2.grid(row=3, column=1, padx=(5, 0), sticky="w")
+
+    def on_hour_selected(self, event: Event):
+        """Run logic when an hour is selected.
+
+        :param event: Event object.
+        """
+        # Get selected hour
+        hour = self.hours.get()
+        i = self.hours["values"].index(hour)
+
+        # Get the price for the selected hour
+        value = self._prices[i]["value"]
+
+        # Update label
+        text = f"{value} €/MWh"
+        self.hour_2.configure(text=text)
 
 
 class MainWindow(Tk):
