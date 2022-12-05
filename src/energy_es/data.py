@@ -75,9 +75,20 @@ class PricesManager:
         # Transform data
         prices = list(map(
             lambda x: {
-                "hour":
-                    datetime.fromisoformat(x["datetime"].replace(" ", ""))
-                    .strftime("%H:%M"),
+                "datetime":
+                    datetime.fromisoformat(x["datetime"].replace(" ", "")),
+                "value": x["value"]
+            },
+            prices
+        ))
+
+        # Update date
+        self._date = prices[0]["datetime"].strftime("%Y-%m-%d")
+
+        # Transform data
+        prices = list(map(
+            lambda x: {
+                "hour": x["datetime"].strftime("%H:%M"),
                 "value": x["value"]
             },
             prices
@@ -86,8 +97,7 @@ class PricesManager:
         # Sort data
         prices = sorted(prices, key=lambda x: x["hour"])
 
-        # Update date and prices
-        self._date = today
+        # Update prices
         self._prices = prices
 
     def get_prices(self) -> list[dict]:
