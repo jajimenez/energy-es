@@ -2,8 +2,10 @@
 
 from os.path import join, dirname
 from datetime import date
+from platform import uname
 
-from tkinter import Tk, Image, Event
+from tkinter import Tk, Menu, Image, Event
+from tkinter.messagebox import showinfo
 from tkinter.ttk import Frame, Label, Combobox
 
 from energy_es.data import PricesManager
@@ -136,6 +138,7 @@ class MainWindow(Tk):
         self.title("Energy-ES")
         self.set_icon()
         self.set_geometry()
+        self.create_menu()
         self.create_widgets()
 
     def set_icon(self):
@@ -175,6 +178,46 @@ class MainWindow(Tk):
 
         self.geometry(f"{widget_width}x{widget_height}+{x}+{y}")
         self.minsize(widget_width, widget_height)
+
+    def create_menu(self):
+        """Create the window menu."""
+        plat = uname()[0].lower()
+
+        if plat == "darwin":  # Mac OS
+            self.tk.createcommand("tkAboutDialog", self.on_about)
+            self.tk.createcommand("tk::mac::Quit", self.on_quit)
+        else:  # Other OS
+            self.root_menu = Menu()
+
+            self.file_menu = Menu(self.root_menu, tearoff=False)
+            self.file_menu.add_command(label="Quit", command=self.on_quit)
+
+            self.help_menu = Menu(self.root_menu, tearoff=False)
+
+            self.help_menu.add_command(
+                label="About Energy-ES", command=self.on_about
+            )
+
+            self.root_menu.add_cascade(menu=self.file_menu, label="File")
+            self.root_menu.add_cascade(menu=self.help_menu, label="Help")
+
+            self.config(menu=self.root_menu)
+
+    def on_quit(self):
+        """Run logic when the Quit menu option is clicked."""
+        self.quit()
+
+    def on_about(self):
+        """Run logic when the About menu option is clicked."""
+        showinfo(
+            title="About Energy-ES",
+            message=(
+                "Energy-ES\n"
+                "Version 0.1.0\n"
+                "Copyright \u00A9 Jose A. Jimenez\n\n"
+                "Data source: Red Eléctrica"
+            )
+        )
 
     def create_widgets(self):
         """Create the window widgets."""
