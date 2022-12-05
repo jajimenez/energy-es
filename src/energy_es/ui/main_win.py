@@ -24,20 +24,22 @@ class MainFrame(Frame):
 
         :param event: Event object.
         """
-        self.create_widgets()
+        self._dt = date.today()
+
+        try:
+            pm = PricesManager()
+            self._prices = pm.get_prices()
+            self._min_price = pm.get_min_price()
+            self._max_price = pm.get_max_price()
+
+            self.create_widgets()
+        except Exception:
+            self.create_error_widgets()
 
     def create_widgets(self):
         """Create the frame widgets."""
-        # Data
-        pm = PricesManager()
-
-        dt = date.today()
-        self._prices = pm.get_prices()
-        self._min_price = pm.get_min_price()
-        self._max_price = pm.get_max_price()
-
         # Chart widget
-        self.chart = get_chart_widget(dt, self._prices, self)
+        self.chart = get_chart_widget(self._dt, self._prices, self)
         self.chart.pack(side="top", fill="x")
 
         # Summary widget
@@ -85,6 +87,11 @@ class MainFrame(Frame):
         self.hour_2 = Label(self.summary, text="")
         self.hour_2.grid(row=3, column=1, padx=(5, 0), sticky="w")
 
+    def create_error_widgets(self):
+        """Create the widgets of the frame when an error happened."""
+        self.error = Label(self, text="There was an error getting the data")
+        self.error.pack(side="top", fill="x", padx=10, pady=10)
+
     def on_hour_selected(self, event: Event):
         """Run logic when an hour is selected.
 
@@ -121,7 +128,7 @@ class MainWindow(Tk):
 
         # Window size
         widget_width = 700
-        widget_height = 480
+        widget_height = 450
 
         # Border (space between window and widget) size
         border_width = self.winfo_rootx() - self.winfo_x()
