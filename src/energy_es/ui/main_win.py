@@ -189,19 +189,18 @@ class MainWindow(Tk):
         else:  # Other OS
             self.root_menu = Menu()
 
+            # File sub-menu
             self.file_menu = Menu(self.root_menu, tearoff=False)
             self.file_menu.add_command(label="Quit", command=self.on_quit)
 
+            # Help sub-menu
             self.help_menu = Menu(self.root_menu, tearoff=False)
-
-            self.help_menu.add_command(
-                label="About Energy-ES", command=self.on_about
-            )
+            self.help_menu.add_command(label="About", command=self.on_about)
 
             self.root_menu.add_cascade(menu=self.file_menu, label="File")
             self.root_menu.add_cascade(menu=self.help_menu, label="Help")
 
-            self.config(menu=self.root_menu)
+            self.configure(menu=self.root_menu)
 
     def on_quit(self):
         """Run logic when the Quit menu option is clicked."""
