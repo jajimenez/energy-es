@@ -89,6 +89,14 @@ class MainFrame(Frame):
         self.hour_2 = Label(self.summary, text="")
         self.hour_2.grid(row=3, column=1, padx=(5, 0), sticky="w")
 
+        # Select first hour. Calling the "set" method of a combo box widget
+        # doesn't trigger the "<<ComboboxSelected>>" event and, therefore, we
+        # need to call the "select_hour" method of this class.
+        f = hours_values[0]
+
+        self.hours.set(f)
+        self.select_hour(f)
+
     def create_error_widgets(self):
         """Create the widgets of the frame when an error happened."""
         self.error = Label(self, text="There was an error getting the data")
@@ -99,11 +107,16 @@ class MainFrame(Frame):
 
         :param event: Event object.
         """
-        # Get selected hour
-        hour = self.hours.get()
-        i = self.hours["values"].index(hour)
+        hour = self.hours.get()  # Selected hour in the combo box
+        self.select_hour(hour)
 
+    def select_hour(self, hour: str):
+        """Select an hour.
+
+        :param: Hour ("HH:MM").
+        """
         # Get the price for the selected hour
+        i = self.hours["values"].index(hour)
         value = self._prices[i]["value"]
 
         # Update label
