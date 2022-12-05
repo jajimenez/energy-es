@@ -8,6 +8,7 @@ from tkinter.ttk import Frame, Label, Combobox
 
 from energy_es.data import PricesManager
 from energy_es.ui.chart import get_chart_widget
+from energy_es.ui.tools import get_time
 
 
 class MainFrame(Frame):
@@ -26,9 +27,10 @@ class MainFrame(Frame):
 
         try:
             pm = PricesManager()
+
             self._prices = pm.get_prices()
-            self._min_price = pm.get_min_price()
-            self._max_price = pm.get_max_price()
+            self._min_price = min(self._prices, key=lambda x: x["value"])
+            self._max_price = max(self._prices, key=lambda x: x["value"])
 
             self.create_widgets()
         except Exception:
@@ -37,7 +39,7 @@ class MainFrame(Frame):
     def create_widgets(self):
         """Create the frame widgets."""
         # Chart widget
-        self.chart = get_chart_widget(self._dt, self._prices, self)
+        self.chart = get_chart_widget(self._prices, self)
         self.chart.pack(side="top", fill="x")
 
         # We need to reset the window icon as adding the chart sets the icon to
@@ -52,7 +54,7 @@ class MainFrame(Frame):
         self.min_1 = Label(self.summary, text="Minimum price:")
         self.min_1.grid(row=0, column=0, sticky="w")
 
-        min_hour = self._min_price["hour"]
+        min_hour = get_time(self._min_price["datetime"])
         min_value = self._min_price["value"]
         min_text = f"{min_hour}, {min_value} €/MWh"
 
@@ -63,7 +65,7 @@ class MainFrame(Frame):
         self.max_1 = Label(self.summary, text="Maximum price:")
         self.max_1.grid(row=1, column=0, sticky="w")
 
-        max_hour = self._max_price["hour"]
+        max_hour = get_time(self._max_price["datetime"])
         max_value = self._max_price["value"]
         max_text = f"{max_hour}, {max_value} €/MWh"
 
@@ -77,7 +79,7 @@ class MainFrame(Frame):
             row=2, column=0, columnspan=2, pady=(10, 0), sticky="w"
         )
 
-        hours_values = [str.zfill(str(i), 2) + ":00" for i in range(24)]
+        hours_values = [get_time(i["datetime"]) for i in self._prices]
 
         self.hours = Combobox(
             self.summary, state="readonly", values=hours_values, width=10
@@ -103,7 +105,7 @@ class MainFrame(Frame):
         self.error.pack(side="top", fill="x", padx=10, pady=10)
 
     def on_hour_selected(self, event: Event):
-        """Run logic when an hour is selected.
+        """Run logic when an hour string ("HH:MM") is selected.
 
         :param event: Event object.
         """
@@ -113,7 +115,7 @@ class MainFrame(Frame):
     def select_hour(self, hour: str):
         """Select an hour.
 
-        :param: Hour ("HH:MM").
+        :param: Hour string ("HH:MM").
         """
         # Get the price for the selected hour
         i = self.hours["values"].index(hour)

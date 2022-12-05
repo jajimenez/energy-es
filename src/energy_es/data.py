@@ -31,24 +31,60 @@ class PricesManager:
 
     def _load_data(self):
         """Load the data from the cache."""
-        self._date = self.conf.get("date")
-        self._prices = self.conf.get("prices")
+        prices = self.conf.get("prices")
+
+        if prices is not None:
+            prices = list(map(
+                lambda x: {
+                    "datetime": datetime.fromisoformat(x["datetime"]),
+                    "value": x["value"]
+                },
+                prices
+            ))
+
+        self._prices = prices
 
     def _save_data(self):
         """Save the data to the cache."""
-        self.conf.set("date", self._date)
-        self.conf.set("prices", self._prices)
+        prices = list(map(
+            lambda x: {
+                "datetime": x["datetime"].isoformat(),
+                "value": x["value"]
+            },
+            self._prices
+        ))
+
+        self.conf.set("prices", prices)
 
     def _is_data_valid(self) -> bool:
         """Check if the data is valid or not.
 
         :return: Whether the data is valid or not.
         """
-        return self._date == str(date.today()) and self._prices is not None
+        if self._prices is None:
+            return False
+
+        # Get last data datetime (which has already its UTC offset information)
+        # and the current local datetime. We call "astimezone" to convert the
+        # local datetime to the same datetime but with its time zone
+        # information (UTC offset and time zone name). This way, we can compare
+        # both datetimes.
+        d1 = self._prices[0]["datetime"]  # Last data datetime, with UTC offset
+        d2 = datetime.now().astimezone()  # Local datetime, with UTC offset
+
+        # Clear time
+        d1 = d1.replace(hour=0, minute=0, second=0, microsecond=0)
+        d2 = d2.replace(hour=0, minute=0, second=0, microsecond=0)
+
+        # Compare dates (datetimes with the same time and UTC offset)
+        return d1 == d2
 
     def _update_data(self):
         """Update the data by calling the API."""
-        # Get current day
+        # Get current day (in the local time zone). We don't need to convert it
+        # to a datetime of any time zone of Spain as the API requires input
+        # start and end datetimes but ignores them and always returns the data
+        # for the current day in Spain (in the Europe/Madrid time zone).
         today = date.today().strftime("%Y-%m-%d")
 
         # Prepare URL
@@ -82,23 +118,14 @@ class PricesManager:
             prices
         ))
 
-        # Update date
-        self._date = prices[0]["datetime"].strftime("%Y-%m-%d")
-
-        # Transform data
-        prices = list(map(
-            lambda x: {
-                "hour": x["datetime"].strftime("%H:%M"),
-                "value": x["value"]
-            },
-            prices
-        ))
-
         # Sort data
-        prices = sorted(prices, key=lambda x: x["hour"])
+        prices = sorted(prices, key=lambda x: x["datetime"])
 
         # Update prices
         self._prices = prices
+
+        # Save data
+        self._save_data()
 
     def get_prices(self) -> list[dict]:
         """Return the hourly energy prices of the current day in Spain.
@@ -108,22 +135,5 @@ class PricesManager:
         """
         if not self._is_data_valid():
             self._update_data()
-            self._save_data()
 
         return self._prices
-
-    def get_min_price(self) -> dict:
-        """Return the minimum price of the current day in Spain.
-
-        :return: Dictionary containing the "hour" (string) and "value" (float)
-        keys.
-        """
-        return min(self.get_prices(), key=lambda x: x["value"])
-
-    def get_max_price(self) -> dict:
-        """Return the maximum price of the current day in Spain.
-
-        :return: Dictionary containing the "hour" (string) and "value" (float)
-        keys.
-        """
-        return max(self.get_prices(), key=lambda x: x["value"])

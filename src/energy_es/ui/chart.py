@@ -1,27 +1,28 @@
 """Energy-ES - User Interface - Chart."""
 
 from io import BytesIO
-from datetime import date
 
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image, ImageTk
 from tkinter.ttk import Widget, Label
 
+from energy_es.ui.tools import get_time
 
-def _get_chart_image(dt: date, prices: list[dict]) -> Image.Image:
+
+def _get_chart_image(prices: list[dict]) -> Image.Image:
     """Return the chart image.
 
-    :param dt: Date of the prices.
     :param prices: List of dictionaries, where each dictionary contains the
-    "hour" (string) and "value" (float) keys.
+    "datetime" (datetime) and "value" (float) keys.
     :return: Chart image.
     """
     # Format date
-    dt = dt.strftime(f"%a %b {dt.day} %Y")
+    dt = prices[0]["datetime"]
+    dt = dt.strftime(f"%a %b {dt.day} %Y (%Z)")
 
     # Create X axis values
-    x = list(map(lambda x: x["hour"], prices))
+    x = list(map(lambda x: get_time(x["datetime"]), prices))
     x = np.array(x)
 
     # Create Y axis values
@@ -30,12 +31,12 @@ def _get_chart_image(dt: date, prices: list[dict]) -> Image.Image:
 
     # Minimum price
     min_price = min(prices, key=lambda x: x["value"])
-    min_x = min_price["hour"]
+    min_x = get_time(min_price["datetime"])
     min_y = min_price["value"]
 
     # Maximum price
     max_price = max(prices, key=lambda x: x["value"])
-    max_x = max_price["hour"]
+    max_x = get_time(max_price["datetime"])
     max_y = max_price["value"]
 
     # Create chart
@@ -61,18 +62,15 @@ def _get_chart_image(dt: date, prices: list[dict]) -> Image.Image:
     return Image.open(buf)
 
 
-def get_chart_widget(
-    dt: date, prices: list[dict], root: Widget = None
-) -> Widget:
+def get_chart_widget(prices: list[dict], root: Widget = None) -> Widget:
     """Return the chart widget.
 
-    :param dt: Date of the prices.
     :param prices: List of dictionaries, where each dictionary contains the
     "hour" (string) and "value" (float) keys.
     :param root: Root widget.
     :return: Chart widget.
     """
-    img = _get_chart_image(dt, prices)
+    img = _get_chart_image(prices)
     img = ImageTk.PhotoImage(img)
     chart = Label(root, image=img)
 
