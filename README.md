@@ -1,5 +1,5 @@
 # Energy-ES
-Energy-ES is a desktop application that displays the hourly energy prices for
+Energy-ES is a desktop application that displays the hourly energy prices of
 the current day in Spain. The data is provided by the API of Red Electrica.
 
 - Version: 0.1.0
