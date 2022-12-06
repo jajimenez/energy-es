@@ -1,6 +1,6 @@
 """Energy-ES - User Interface."""
 
-from energy_es.ui.main_win import MainWindow
+from energy_es.ui.main_window import MainWindow
 
 
 def start_ui():
