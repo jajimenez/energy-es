@@ -16,6 +16,7 @@ class MainWindow(Tk):
         """Class initializer."""
         super().__init__(*args, **kwargs)
 
+        self.protocol("WM_DELETE_WINDOW", self.on_quit)
         self.title("Energy-ES")
         self.set_icon()
         self.set_geometry()
@@ -85,6 +86,7 @@ class MainWindow(Tk):
 
     def on_quit(self):
         """Run logic when the Quit menu option is clicked."""
+        self.destroy()
         self.quit()
 
     def on_about(self):
