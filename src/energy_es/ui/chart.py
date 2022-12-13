@@ -12,7 +12,7 @@ from energy_es.data.tools import get_time
 APP_ID = "energy_es"
 UNIT_LABELS = {"k": "€/KWh", "m": "€/MWh"}
 
-ERROR_HTML = (
+MESSAGE_HTML = (
     '<!DOCTYPE html>'
     '<html>'
     '<head>'
@@ -23,6 +23,20 @@ ERROR_HTML = (
     '</body>'
     '</html>'
 )
+
+
+def get_message_html(title: str, message: str = "") -> str:
+    """Return a message HTML code.
+
+    :param title: Title.
+    :param message: Message.
+    :return: HTML code.
+    """
+    return (
+        MESSAGE_HTML
+        .replace("{{TITLE}}", title)
+        .replace("{{MESSAGE}}", message)
+    )
 
 
 def _write_chart(unit: str, path: str):
@@ -177,18 +191,3 @@ def get_chart_path(unit: str = "m") -> str:
     _write_chart(unit, path)
 
     return path
-
-
-def get_error_html(message: str) -> str:
-    """Return an error message HTML code.
-
-    :param message: Error message.
-    :return: HTML code.
-    """
-    title = "There was an error generating the chart"
-
-    return (
-        ERROR_HTML
-        .replace("{{TITLE}}", title)
-        .replace("{{MESSAGE}}", message)
-    )

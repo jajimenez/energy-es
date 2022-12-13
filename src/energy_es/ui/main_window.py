@@ -2,7 +2,7 @@
 
 from os.path import join, dirname
 
-from PySide6.QtCore import Qt, QUrl
+from PySide6.QtCore import Qt, QUrl, QObject, Signal, QThread
 from PySide6.QtGui import QIcon
 
 from PySide6.QtWidgets import (
@@ -11,7 +11,45 @@ from PySide6.QtWidgets import (
 
 from PySide6.QtWebEngineWidgets import QWebEngineView
 
-from energy_es.ui.chart import get_chart_path, get_error_html
+from energy_es.ui.chart import get_message_html, get_chart_path
+
+
+class ChartWorker(QObject):
+    """Chart thread class.
+
+    This class is used to generate the chart HTML file in a separate, parallel
+    thread.
+    """
+
+    success = Signal(str)
+    error = Signal(str)
+    finished = Signal()
+
+    def __init__(self, unit: str):
+        """Initialize the instance.
+
+        :param unit: Prices unit. It must be "k" to have the prices in €/KWh or
+        "m" to have them in €/MWh.
+        """
+        super().__init__()
+        self._unit = unit
+
+    def do_work(self):
+        """Do the thread work.
+
+        This method generates the chart HTML file in a separate, parallel
+        thread and emits the file path or an error message HTML code if there
+        is any error.
+        """
+        try:
+            path = get_chart_path(self._unit)  # Absolute path
+            self.success.emit(path)
+        except Exception as e:
+            title = "There was an error generating the chart"
+            html = get_message_html(title, str(e))
+            self.error.emit(html)
+        finally:
+            self.finished.emit()
 
 
 class MainWindow(QWidget):
@@ -77,13 +115,29 @@ class MainWindow(QWidget):
         :param unit: Prices unit. It must be "k" to have the prices in €/KWh or
         "m" to have them in €/MWh.
         """
-        try:
-            path = get_chart_path(unit)  # Absolute path
+        def on_success(path: str):
             url = QUrl.fromLocalFile(path)
             self._chart.load(url)
-        except Exception as e:
-            html = get_error_html(str(e))
+
+        def on_error(html: str):
             self._chart.setHtml(html)
+
+        self.chart_thread = QThread()
+        self.chart_worker = ChartWorker(unit)
+        self.chart_worker.moveToThread(self.chart_thread)
+
+        self.chart_thread.started.connect(self.chart_worker.do_work)
+        self.chart_worker.finished.connect(self.chart_thread.quit)
+
+        self.chart_worker.finished.connect(self.chart_worker.deleteLater)
+        self.chart_thread.finished.connect(self.chart_thread.deleteLater)
+
+        self.chart_worker.success.connect(on_success)
+        self.chart_worker.error.connect(on_error)
+
+        html = get_message_html("Generating the chart...")
+        self._chart.setHtml(html)
+        self.chart_thread.start()
 
     def on_unit_changed(self, x: int):
         """Run logic when the prices unit has changed.
