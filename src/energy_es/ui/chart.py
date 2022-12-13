@@ -16,8 +16,8 @@ UNIT_LABELS = {"k": "€/KWh", "m": "€/MWh"}
 def _write_chart(unit: str, path: str):
     """Generate and write the chart HTML page with updated data.
 
-    :param unit: Prices unit. It must be "k" to return the prices in €/KWh or
-    "m" (default) to return them in €/MWh.
+    :param unit: Prices unit. It must be "k" to have the prices in €/KWh or "m"
+    to have them in €/MWh.
     :param path: Destination file path.
     """
     unit = unit.lower()
@@ -53,14 +53,14 @@ def _write_chart(unit: str, path: str):
     dt = spot[0]["datetime"]
     dt = dt.strftime(f"%A {dt.day} %B %Y (%Z)")
 
-    title = f"Electricity price ({unit_label}) in Spain for {dt}"
+    title = f"Electricity price ({unit_label}) in Spain (peninsula) for {dt}"
     source = "Data source: Red Eléctrica de España"
 
     # Create dataframes
     spot_df = pd.DataFrame(spot_2)
     pvpc_df = pd.DataFrame(pvpc_2)
 
-    text = ["MIN", "MAX"]
+    text = ["<b>MIN</b>", "<b>MAX</b>"]
     text_pos = ["bottom center", "top center"]
 
     for df in (spot_df, pvpc_df):
@@ -105,7 +105,9 @@ def _write_chart(unit: str, path: str):
             "linecolor": "black",
             "gridcolor": "lightgrey",
             "ticks": "outside"
-        }
+        },
+        legend={"itemdoubleclick": False},
+        margin={"t": 65}
     )
 
     hover_tem = "Time: &nbsp;%{x}<br>Price: &nbsp;%{y} " + unit_label
@@ -149,12 +151,12 @@ def _write_chart(unit: str, path: str):
     fig.write_html(path, config=conf)
 
 
-def get_chart_path(unit: str) -> str:
+def get_chart_path(unit: str = "m") -> str:
     """Generate and write the chart HTML page with updated data and get its
     path.
 
-    :param unit: Prices unit. It must be "k" to return the prices in €/KWh or
-    "m" (default) to return them in €/MWh.
+    :param unit: Prices unit. It must be "k" to have the prices in €/KWh or "m"
+    (default) to have them in €/MWh.
     :return: Absolute path of the chart file.
     """
     uc = UserConf(APP_ID)
