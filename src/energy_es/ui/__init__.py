@@ -1,5 +1,7 @@
 """Energy-ES - User Interface."""
 
+from PySide6.QtWidgets import QApplication
+
 from energy_es.ui.main_window import MainWindow
 
 
@@ -8,5 +10,9 @@ def start_ui():
 
     This function displays the main window.
     """
+    app = QApplication([])
+
     win = MainWindow()
-    win.mainloop()
+    win.show()
+
+    app.exec()

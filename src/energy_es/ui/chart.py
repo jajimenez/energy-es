@@ -1,81 +1,165 @@
 """Energy-ES - User Interface - Chart."""
 
-from io import BytesIO
-
 import numpy as np
-import matplotlib.pyplot as plt
-from PIL import Image, ImageTk
-from tkinter.ttk import Widget, Label
+import pandas as pd
+import plotly.graph_objects as go
+from userconf import UserConf
 
-from energy_es.ui.tools import get_time
+from energy_es.data.prices import PricesManager
+from energy_es.data.tools import get_time
 
 
-def _get_chart_image(prices: list[dict]) -> Image.Image:
-    """Return the chart image.
+APP_ID = "energy_es"
+UNIT_LABELS = {"k": "€/KWh", "m": "€/MWh"}
 
-    :param prices: List of dictionaries, where each dictionary contains the
-    "datetime" (datetime) and "value" (float) keys.
-    :return: Chart image.
+
+def _write_chart(unit: str, path: str):
+    """Generate and write the chart HTML page with updated data.
+
+    :param unit: Prices unit. It must be "k" to return the prices in €/KWh or
+    "m" (default) to return them in €/MWh.
+    :param path: Destination file path.
     """
-    # Format date
-    dt = prices[0]["datetime"]
-    dt = dt.strftime(f"%a %b {dt.day} %Y (%Z)")
+    unit = unit.lower()
 
-    # Create X axis values
-    x = list(map(lambda x: get_time(x["datetime"]), prices))
-    x = np.array(x)
+    # Check units
+    if unit not in ("k", "m"):
+        raise Exception('Invalid unit. It must be "k" (€/KWh) or "m" (€/MWh)')
 
-    # Create Y axis values
-    y = list(map(lambda x: x["value"], prices))
-    y = np.array(y)
+    unit_label = UNIT_LABELS[unit]
 
-    # Minimum price
-    min_price = min(prices, key=lambda x: x["value"])
-    min_x = get_time(min_price["datetime"])
-    min_y = min_price["value"]
+    # Get data
+    pm = PricesManager()
+    spot = pm.get_spot_market_prices(unit)
+    pvpc = pm.get_pvpc_prices(unit)
 
-    # Maximum price
-    max_price = max(prices, key=lambda x: x["value"])
-    max_x = get_time(max_price["datetime"])
-    max_y = max_price["value"]
+    # Transform data
+    prices = []
+
+    for i in (spot, pvpc):
+        i2 = list(map(
+            lambda x: {
+                "time": get_time(x["datetime"]),
+                "value": x["value"]
+            },
+            i
+        ))
+
+        prices.append(i2)
+
+    spot_2, pvpc_2 = prices
+
+    # Title and source
+    dt = spot[0]["datetime"]
+    dt = dt.strftime(f"%A {dt.day} %B %Y (%Z)")
+
+    title = f"Electricity price ({unit_label}) in Spain for {dt}"
+    source = "Data source: Red Eléctrica de España"
+
+    # Create dataframes
+    spot_df = pd.DataFrame(spot_2)
+    pvpc_df = pd.DataFrame(pvpc_2)
+
+    text = ["MIN", "MAX"]
+    text_pos = ["bottom center", "top center"]
+
+    for df in (spot_df, pvpc_df):
+        cond = [
+            df["value"] == df["value"].min(),
+            df["value"] == df["value"].max()
+        ]
+
+        df["text"] = np.select(cond, text, default=None)
+        df["text_position"] = np.select(cond, text_pos, default="top center")
 
     # Create chart
-    fig, ax = plt.subplots(figsize=(7, 3))
-    fig.suptitle(f"Spot market price (€/MWh) in Spain for {dt}", y=0.94)
+    fig = go.Figure()
 
-    ax.set_title("Source: Red Eléctrica", fontdict={"fontsize": 10})
-    ax.plot(x, y, marker="o")
-    ax.scatter([min_x], [min_y], c="#00d800", zorder=2)
-    ax.scatter([max_x], [max_y], c="#ff0000", zorder=2)
+    fig.update_layout(
+        title={
+            "text":
+                f'{title}<br><span style="font-size: 14px">{source}</span>',
+            "yref": "paper",
+            "y": 1,
+            "yanchor": "bottom",
+            "pad": {"l": 77, "b": 40},
+            "x": 0,
+            "xanchor": "left"
+        },
+        plot_bgcolor="white",
+        xaxis={
+            "title": "Time",
+            "fixedrange": True,
+            "showline": True,
+            "mirror": True,
+            "linecolor": "black",
+            "gridcolor": "lightgrey",
+            "ticks": "outside",
+            "tickangle": 45
+        },
+        yaxis={
+            "title": unit_label,
+            "fixedrange": True,
+            "showline": True,
+            "mirror": True,
+            "linecolor": "black",
+            "gridcolor": "lightgrey",
+            "ticks": "outside"
+        }
+    )
 
-    ax.set(xlabel="Hour (PM)", ylabel="€/MWh")
-    ax.grid()
+    hover_tem = "Time: &nbsp;%{x}<br>Price: &nbsp;%{y} " + unit_label
+    spot_hover_tem = "<b>Spot Market</b><br>" + hover_tem
+    pvpc_hover_tem = "<b>PVPC</b><br>" + hover_tem
 
-    plt.xticks(rotation=45, ha="right", rotation_mode="anchor")
-    plt.tight_layout()
+    # Spot market prices
+    spot_sca = go.Scatter(
+        x=spot_df["time"],
+        y=spot_df["value"],
+        mode="lines+markers+text",
+        text=spot_df["text"],
+        line={"width": 3, "color": "#2077b4"},
+        marker={"size": 12, "color": "#2077b4"},
+        textposition=spot_df["text_position"],
+        textfont={"color": "#2077b4"},
+        name="Spot Market price",
+        hovertemplate=spot_hover_tem,
+        hoverlabel={"namelength": 0}
+    )
 
-    # Convert the figure to a PIL image
-    buf = BytesIO()
-    fig.savefig(buf)
-    buf.seek(0)
+    # PVPC prices
+    pvpc_sca = go.Scatter(
+        x=pvpc_df["time"],
+        y=pvpc_df["value"],
+        mode="lines+markers+text",
+        text=pvpc_df["text"],
+        line={"width": 3, "color": "#ff8c00"},
+        marker={"size": 12, "color": "#ff8c00"},
+        textposition=pvpc_df["text_position"],
+        textfont={"color": "#ff8c00"},
+        name="PVPC price",
+        hovertemplate=pvpc_hover_tem,
+        hoverlabel={"namelength": 0}
+    )
 
-    return Image.open(buf)
+    fig.add_traces([pvpc_sca, spot_sca])
+    conf = {"displayModeBar": False}
+
+    # Write chart
+    fig.write_html(path, config=conf)
 
 
-def get_chart_widget(prices: list[dict], root: Widget = None) -> Widget:
-    """Return the chart widget.
+def get_chart_path(unit: str) -> str:
+    """Generate and write the chart HTML page with updated data and get its
+    path.
 
-    :param prices: List of dictionaries, where each dictionary contains the
-    "hour" (string) and "value" (float) keys.
-    :param root: Root widget.
-    :return: Chart widget.
+    :param unit: Prices unit. It must be "k" to return the prices in €/KWh or
+    "m" (default) to return them in €/MWh.
+    :return: Absolute path of the chart file.
     """
-    img = _get_chart_image(prices)
-    img = ImageTk.PhotoImage(img)
-    chart = Label(root, image=img)
+    uc = UserConf(APP_ID)
 
-    # Keep a reference to the image in order to avoid that the garbage
-    # collector deletes it.
-    chart.image = img
+    path = uc.files.get_path("chart.html")
+    _write_chart(unit, path)
 
-    return chart
+    return path
