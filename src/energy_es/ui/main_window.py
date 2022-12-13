@@ -11,7 +11,7 @@ from PySide6.QtWidgets import (
 
 from PySide6.QtWebEngineWidgets import QWebEngineView
 
-from energy_es.ui.chart import get_chart_path
+from energy_es.ui.chart import get_chart_path, get_error_html
 
 
 class MainWindow(QWidget):
@@ -77,9 +77,13 @@ class MainWindow(QWidget):
         :param unit: Prices unit. It must be "k" to have the prices in €/KWh or
         "m" to have them in €/MWh.
         """
-        path = get_chart_path(unit)  # Absolute path
-        url = QUrl.fromLocalFile(path)
-        self._chart.load(url)
+        try:
+            path = get_chart_path(unit)  # Absolute path
+            url = QUrl.fromLocalFile(path)
+            self._chart.load(url)
+        except Exception as e:
+            html = get_error_html(str(e))
+            self._chart.setHtml(html)
 
     def on_unit_changed(self, x: int):
         """Run logic when the prices unit has changed.

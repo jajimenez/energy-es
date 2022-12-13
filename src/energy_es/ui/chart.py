@@ -12,6 +12,18 @@ from energy_es.data.tools import get_time
 APP_ID = "energy_es"
 UNIT_LABELS = {"k": "€/KWh", "m": "€/MWh"}
 
+ERROR_HTML = (
+    '<!DOCTYPE html>'
+    '<html>'
+    '<head>'
+    '</head>'
+    '<body>'
+    '<div style="font-family: sans-serif; font-weight: bold;">{{TITLE}}</div>'
+    '<p>{{MESSAGE}}</p>'
+    '</body>'
+    '</html>'
+)
+
 
 def _write_chart(unit: str, path: str):
     """Generate and write the chart HTML page with updated data.
@@ -165,3 +177,18 @@ def get_chart_path(unit: str = "m") -> str:
     _write_chart(unit, path)
 
     return path
+
+
+def get_error_html(message: str) -> str:
+    """Return an error message HTML code.
+
+    :param message: Error message.
+    :return: HTML code.
+    """
+    title = "There was an error generating the chart"
+
+    return (
+        ERROR_HTML
+        .replace("{{TITLE}}", title)
+        .replace("{{MESSAGE}}", message)
+    )
