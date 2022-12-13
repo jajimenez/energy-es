@@ -6,7 +6,7 @@ from PySide6.QtCore import Qt, QUrl, QObject, Signal, QThread
 from PySide6.QtGui import QIcon
 
 from PySide6.QtWidgets import (
-    QVBoxLayout, QHBoxLayout, QWidget, QLabel, QComboBox
+    QVBoxLayout, QHBoxLayout, QWidget, QLabel, QComboBox, QSizePolicy
 )
 
 from PySide6.QtWebEngineWidgets import QWebEngineView
@@ -95,7 +95,8 @@ class MainWindow(QWidget):
         self._unit_lab = QLabel(text="Prices unit:")
 
         self._layout_2.addWidget(
-            self._unit_lab, alignment=Qt.AlignmentFlag.AlignLeft
+            self._unit_lab,
+            alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop
         )
 
         # Unit combo box
@@ -106,8 +107,23 @@ class MainWindow(QWidget):
 
         self._layout_2.addWidget(
             self._unit_combo, stretch=True,
-            alignment=Qt.AlignmentFlag.AlignLeft
+            alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop
         )
+
+        # Note label
+        note = (
+            "Note: The variables shown in the chart do not represent any "
+            "final price for a regular final consumer. There are many more "
+            "variables that determine a final price."
+        )
+
+        sp = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self._note_lab = QLabel(text=note)
+        self._note_lab.setFixedWidth(400)
+        self._note_lab.setSizePolicy(sp)
+        self._note_lab.setWordWrap(True)
+
+        self._layout_2.addWidget(self._note_lab)
 
     def update_chart(self, unit: str):
         """Update the chart widget.
