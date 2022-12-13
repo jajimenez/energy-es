@@ -65,7 +65,7 @@ def _write_chart(unit: str, path: str):
     dt = spot[0]["datetime"]
     dt = dt.strftime(f"%A {dt.day} %B %Y (%Z)")
 
-    title = f"Electricity price ({unit_label}) in Spain (peninsula) for {dt}"
+    title = f"Electricity price ({unit_label}) in Spain for {dt}"
     source = "Data source: Red Eléctrica de España"
 
     # Create dataframes
