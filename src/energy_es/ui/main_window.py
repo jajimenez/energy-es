@@ -64,15 +64,15 @@ class MainWidget(QWidget):
 
         # Note label
         note = (
-            "Note: The variables shown in the chart do not represent any final"
-            " price for consumers. There are many more variables that "
-            "determine a final price."
+            "Note: The variables shown in the chart do not represent final "
+            "prices for consumers. There are more variables that determine "
+            "final prices."
         )
 
         sp = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
         self._note_lab = QLabel(text=note)
-        self._note_lab.setFixedWidth(450)
+        self._note_lab.setFixedWidth(420)
         self._note_lab.setSizePolicy(sp)
         self._note_lab.setWordWrap(True)
 
