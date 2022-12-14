@@ -47,7 +47,10 @@ class AboutDialog(QDialog):
         self._logo_lab.setFixedSize(100, 100)
         self._logo_lab.setScaledContents(True)
 
-        self._layout.addWidget(self._logo_lab, alignment=Qt.AlignCenter)
+        self._layout.addWidget(
+            self._logo_lab,
+            alignment=Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop
+        )
 
         # Title label
         self._title_lab = QLabel(text="Energy-ES")
@@ -57,25 +60,42 @@ class AboutDialog(QDialog):
         font.setPointSize(20)
 
         self._title_lab.setFont(font)
-        self._layout.addWidget(self._title_lab, alignment=Qt.AlignCenter)
+
+        self._layout.addWidget(
+            self._title_lab,
+            alignment=Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop
+        )
 
         # Version label
         self._version_lab = QLabel(text="Version 0.1.0")
-        self._layout.addWidget(self._version_lab, alignment=Qt.AlignCenter)
+
+        self._layout.addWidget(
+            self._version_lab,
+            alignment=Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop
+        )
 
         # Author label
         self._author_lab = QLabel(text="Copyright © Jose A. Jimenez")
-        self._layout.addWidget(self._author_lab, alignment=Qt.AlignCenter)
+
+        self._layout.addWidget(
+            self._author_lab,
+            alignment=Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop
+        )
 
         # License label
         self._license_lab = QLabel(text="MIT License")
-        self._layout.addWidget(self._license_lab, alignment=Qt.AlignCenter)
+        self._layout.addWidget(
+            self._license_lab, stretch=True,
+            alignment=Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop
+        )
 
         # Close button
         self._close_button = QPushButton(text="Close")
         self._close_button.clicked.connect(self.on_close)
 
-        self._layout.addWidget(self._close_button, alignment=Qt.AlignRight)
+        self._layout.addWidget(
+            self._close_button, alignment=Qt.AlignmentFlag.AlignRight
+        )
 
     def on_close(self):
         """Run logic when the Close button is clicked."""

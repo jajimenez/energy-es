@@ -3,7 +3,7 @@
 from os.path import join, dirname
 
 from PySide6.QtCore import Qt, QUrl, QThread
-from PySide6.QtGui import QAction, QIcon
+from PySide6.QtGui import QIcon, QAction
 
 from PySide6.QtWidgets import (
     QMainWindow, QWidget, QMenu, QVBoxLayout, QHBoxLayout, QLabel, QComboBox,
