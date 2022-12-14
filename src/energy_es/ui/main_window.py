@@ -170,11 +170,11 @@ class MainWindow(QMainWindow):
         self.menu_bar.addMenu(self.help_menu)
 
     def on_exit(self):
-        """Run logic when the Exit menu option has been clicked."""
+        """Run logic when the Exit menu option is clicked."""
         self.close()
 
     def on_about(self):
-        """Run logic when the About menu option has been clicked."""
+        """Run logic when the About menu option is clicked."""
         self._about_dialog = AboutDialog()
         self._about_dialog.show()
 
