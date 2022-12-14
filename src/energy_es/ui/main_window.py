@@ -14,6 +14,7 @@ from PySide6.QtWebEngineWidgets import QWebEngineView
 
 from energy_es.ui.chart import get_message_html
 from energy_es.ui.workers import ChartWorker
+from energy_es.ui.about_dialog import AboutDialog
 
 
 class MainWidget(QWidget):
@@ -174,7 +175,8 @@ class MainWindow(QMainWindow):
 
     def on_about(self):
         """Run logic when the About menu option has been clicked."""
-        pass
+        self._about_dialog = AboutDialog()
+        self._about_dialog.show()
 
     def create_widgets(self):
         """Create window widgets."""
