@@ -2,90 +2,41 @@
 
 from os.path import join, dirname
 
-from PySide6.QtCore import Qt, QUrl, QObject, Signal, QThread
-from PySide6.QtGui import QIcon
+from PySide6.QtCore import Qt, QUrl, QThread
+from PySide6.QtGui import QAction, QIcon
 
 from PySide6.QtWidgets import (
-    QVBoxLayout, QHBoxLayout, QWidget, QLabel, QComboBox, QSizePolicy
+    QMainWindow, QWidget, QMenu, QVBoxLayout, QHBoxLayout, QLabel, QComboBox,
+    QSizePolicy
 )
 
 from PySide6.QtWebEngineWidgets import QWebEngineView
 
-from energy_es.ui.chart import get_message_html, get_chart_path
+from energy_es.ui.chart import get_message_html
+from energy_es.ui.workers import ChartWorker
 
 
-class ChartWorker(QObject):
-    """Chart thread class.
-
-    This class is used to generate the chart HTML file in a separate, parallel
-    thread.
-    """
-
-    success = Signal(str)
-    error = Signal(str)
-    finished = Signal()
-
-    def __init__(self, unit: str):
-        """Initialize the instance.
-
-        :param unit: Prices unit. It must be "k" to have the prices in €/KWh or
-        "m" to have them in €/MWh.
-        """
-        super().__init__()
-        self._unit = unit
-
-    def do_work(self):
-        """Do the thread work.
-
-        This method generates the chart HTML file in a separate, parallel
-        thread and emits the file path or an error message HTML code if there
-        is any error.
-        """
-        try:
-            path = get_chart_path(self._unit)  # Absolute path
-            self.success.emit(path)
-        except Exception as e:
-            title = "There was an error generating the chart"
-            html = get_message_html(title, str(e))
-            self.error.emit(html)
-        finally:
-            self.finished.emit()
-
-
-class MainWindow(QWidget):
-    """Main window."""
+class MainWidget(QWidget):
+    """Main widget of the main window."""
 
     PRICE_UNITS = ["k", "m"]
 
     def __init__(self):
         """Class initializer."""
         super().__init__()
-
-        self.setWindowTitle("Energy-ES")
-        self.set_window_icon()
-        self.resize(1020, 600)
-        self.setMinimumSize(750, 450)
-
         self.create_widgets()
-
-    def set_window_icon(self):
-        """Set the window icon."""
-        img_dir = join(dirname(__file__), "images")
-        logo_path = join(img_dir, "logo.png")
-
-        icon = QIcon(logo_path)
-        self.setWindowIcon(icon)
 
     def create_widgets(self):
         """Create window widgets."""
         # Layout 1
-        self._layout_1 = QVBoxLayout(self)
+        self._layout_1 = QVBoxLayout()
+        self.setLayout(self._layout_1)
 
         # Chart
         self._chart = QWebEngineView(self)
         self._chart.setContextMenuPolicy(Qt.NoContextMenu)
+
         self._layout_1.addWidget(self._chart)
-        self.update_chart("k")
 
         # Layout 2
         self._layout_2 = QHBoxLayout()
@@ -118,12 +69,16 @@ class MainWindow(QWidget):
         )
 
         sp = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+
         self._note_lab = QLabel(text=note)
         self._note_lab.setFixedWidth(400)
         self._note_lab.setSizePolicy(sp)
         self._note_lab.setWordWrap(True)
 
         self._layout_2.addWidget(self._note_lab)
+
+        # Initial chart generation
+        self.update_chart("k")
 
     def update_chart(self, unit: str):
         """Update the chart widget.
@@ -160,5 +115,68 @@ class MainWindow(QWidget):
 
         :param x: Selected unit index.
         """
-        unit = MainWindow.PRICE_UNITS[x]
+        unit = MainWidget.PRICE_UNITS[x]
         self.update_chart(unit)
+
+
+class MainWindow(QMainWindow):
+    """Main window."""
+
+    def __init__(self):
+        """Class initializer."""
+        super().__init__()
+
+        self.setWindowTitle("Energy-ES")
+        self.set_window_icon()
+        self.resize(1020, 600)
+        self.setMinimumSize(750, 450)
+
+        self.create_menu_bar()
+        self.create_widgets()
+
+    def set_window_icon(self):
+        """Set the window icon."""
+        img_dir = join(dirname(__file__), "images")
+        logo_path = join(img_dir, "logo.png")
+
+        icon = QIcon(logo_path)
+        self.setWindowIcon(icon)
+
+    def create_menu_bar(self):
+        """Create the window menu."""
+        self.menu_bar = self.menuBar()
+
+        # File menu
+        self.file_menu = QMenu("&File", self)
+
+        exit_act = QAction("&Exit", self)
+        exit_act.setMenuRole(QAction.QuitRole)
+        exit_act.triggered.connect(self.on_exit)
+
+        self.file_menu.addAction(exit_act)
+
+        # Help menu
+        self.help_menu = QMenu("&Help", self)
+
+        about_act = QAction("&About", self)
+        about_act.setMenuRole(QAction.AboutRole)
+        about_act.triggered.connect(self.on_about)
+
+        self.help_menu.addAction(about_act)
+
+        # Add menus
+        self.menu_bar.addMenu(self.file_menu)
+        self.menu_bar.addMenu(self.help_menu)
+
+    def on_exit(self):
+        """Run logic when the Exit menu option has been clicked."""
+        self.close()
+
+    def on_about(self):
+        """Run logic when the About menu option has been clicked."""
+        pass
+
+    def create_widgets(self):
+        """Create window widgets."""
+        self.main_widget = MainWidget()
+        self.setCentralWidget(self.main_widget)
