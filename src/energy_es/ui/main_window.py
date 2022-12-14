@@ -129,7 +129,7 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle("Energy-ES")
         self.set_window_icon()
-        self.resize(1020, 600)
+        self.resize(900, 550)
         self.setMinimumSize(750, 450)
 
         self.create_menu_bar()
