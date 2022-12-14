@@ -3,7 +3,7 @@
 from os.path import join, dirname
 
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QPixmap
+from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton
 
 
@@ -15,10 +15,19 @@ class AboutDialog(QDialog):
         super().__init__()
 
         self.setWindowTitle("About Energy-ES")
+        self.set_window_icon()
         self.setModal(True)
         self.setFixedSize(214, 278)
 
         self.create_widgets()
+
+    def set_window_icon(self):
+        """Set the window icon."""
+        img_dir = join(dirname(__file__), "images")
+        logo_path = join(img_dir, "logo.png")
+
+        icon = QIcon(logo_path)
+        self.setWindowIcon(icon)
 
     def create_widgets(self):
         """Create window widgets."""
