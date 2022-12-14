@@ -208,7 +208,7 @@ class PricesManager:
             data = list(map(
                 lambda x: {
                     "datetime": x["datetime"],
-                    "value": round(x["value"] / 1000, 4)
+                    "value": round(x["value"] / 1000, 5)
                 },
                 data
             ))
