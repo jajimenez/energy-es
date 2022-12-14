@@ -33,7 +33,7 @@ class MainWidget(QWidget):
         self.setLayout(self._layout_1)
 
         # Chart
-        self._chart = QWebEngineView(self)
+        self._chart = QWebEngineView()
         self._chart.setContextMenuPolicy(Qt.NoContextMenu)
 
         self._layout_1.addWidget(self._chart)
