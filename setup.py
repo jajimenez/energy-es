@@ -2,8 +2,6 @@
 
 import setuptools as st
 
-from src.energy_es import __version__ as version
-
 
 if __name__ == "__main__":
     with open("README.md") as f:
@@ -14,7 +12,7 @@ if __name__ == "__main__":
 
     st.setup(
         name="energy-es",
-        version=version,
+        version="0.1.0",
         description=(
             "Desktop application that displays the hourly energy prices of the"
             " current day in Spain."
