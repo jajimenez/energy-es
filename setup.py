@@ -14,8 +14,9 @@ if __name__ == "__main__":
         name="energy-es",
         version="0.1.0",
         description=(
-            "Desktop application that displays the hourly energy prices of the"
-            " current day in Spain."
+            "Desktop application that shows an interactive chart with the "
+            "hourly values of the Spot Market and PVPC energy prices of the "
+            "current day in Spain."
         ),
         author="Jose A. Jimenez",
         author_email="jajimenezcarm@gmail.com",
@@ -32,10 +33,12 @@ if __name__ == "__main__":
         install_requires=requirements,
         packages=[
             "energy_es",
+            "energy_es.data",
             "energy_es.ui"
         ],
         package_dir={
             "energy_es": "src/energy_es",
+            "energy_es.data": "src/energy_es/data",
             "energy_es.ui": "src/energy_es/ui"
         },
         package_data={
