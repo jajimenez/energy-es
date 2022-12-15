@@ -12,41 +12,11 @@ Spain. The data is provided by the API of Red Electrica.
 
 ## How to install
 
-We can install Energy-ES in the following ways:
-
-### Install from PyPI (Python Package Index)
+We can install Energy-ES through the PyPI (Python Package Index) repository:
 
 ```bash
+pip install --upgrade pip
 pip install energy-es
-```
-
-### Install from the source code
-
-```bash
-python setup.py install
-```
-
-### Generate a package and install it
-
-We can generate and install the **built package** or the **source archive**
-from the source code. The *wheel* package is needed for generating the built
-package.
-
-To generate and install the **built package** (preferred), run the following
-commands from the project directory:
-
-```bash
-pip install wheel
-python setup.py bdist_wheel
-pip install ./dist/energy-es*.whl
-```
-
-To generate and install the **source archive**, run the following commands from
-the project directory:
-
-```bash
-python setup.py sdist
-pip install ./dist/energy-es*.tar.gz
 ```
 
 ## How to run
@@ -64,4 +34,29 @@ directory:
 
 ```bash
 python -m unittest discover test
+```
+
+## How to build the Wheel package
+
+To generate the Wheel package of Energy-ES, run the following commands from the
+project directory:
+
+```bash
+python setup.py bdist_wheel
+```
+
+Before running the above command for the first time, we need to install 
+***wheel*** from PyPI (not to be confused with the wheel package of Energy-ES):
+
+```bash
+pip install wheel
+```
+
+## How to build the Source package
+
+To generate the Source package of Energy-ES, run the following commands from
+the project directory:
+
+```bash
+python setup.py sdist
 ```
