@@ -95,10 +95,11 @@ class PricesManager:
         # information (UTC offset and time zone name). This way, we can compare
         # both datetimes.
 
-        # Last data datetime, with UTC offset
-        d1 = self._spot[0]["datetime"]
+        # Last data datetime. It should have already the UTC offset, but we
+        # call "astimezone" anyway in order to ensure that it has the offset.
+        d1 = self._spot[0]["datetime"].astimezone()
 
-        # Local datetime, with UTC offset
+        # Local datetime with UTC offset
         d2 = datetime.now().astimezone()
 
         # Clear time
