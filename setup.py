@@ -42,7 +42,7 @@ if __name__ == "__main__":
             "energy_es.ui": "src/energy_es/ui"
         },
         package_data={
-            "energy_es.ui": ["images/*.ico"]
+            "energy_es.ui": ["images/*.png"]
         },
         entry_points={
             "console_scripts": [
