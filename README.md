@@ -1,7 +1,7 @@
 # Energy-ES
-Energy-ES is a desktop application that shows an interactive chart with the
-hourly values of the Spot Market and PVPC energy prices of the current day in
-Spain. The data is provided by some APIs of *Red Eléctrica de España*.
+Energy-ES is a Python desktop application that shows an interactive chart with
+the hourly values of the Spot Market and PVPC energy prices of the current day
+in Spain. The data is provided by some APIs of *Red Eléctrica de España*.
 
 - Version: 0.1.0
 - Author: Jose A. Jimenez (jajimenezcarm@gmail.com)
