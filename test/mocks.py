@@ -1,50 +1,71 @@
 """Energy-ES - Tests - Data - Mocks."""
 
-from datetime import datetime, date
+from datetime import datetime
 from unittest.mock import MagicMock
 from typing import Any
 
 
-# "requests.get" method mock
-get_mock = MagicMock()
-get_mock.return_value.status_code = 200
+# Current local datetime
+now = datetime.now()
 
-t = date.today()
+# "requests.get" method mocks
+get_spot_mock = MagicMock()
+get_spot_mock.status_code = 200
 
 spot = [
     {
         "datetime":
-            datetime(t.year, t.month, t.day, i).astimezone().isoformat(),
-        "value": 1.0
+            datetime(now.year, now.month, now.day, i).astimezone().isoformat(),
+        "value": 100.10
     }
     for i in range(24)
 ]
 
-pvpc = [
-    {
-        "datetime":
-            datetime(t.year, t.month, t.day, i).astimezone().isoformat(),
-        "value": 2.0
-    }
-    for i in range(24)
-]
-
-get_mock.return_value.json.return_value = {
+get_spot_mock.json.return_value = {
     "included": [
         {
             "type": "spot",
             "attributes": {
                 "values": spot
             }
-        },
-        {
-            "type": "pvpc",
-            "attributes": {
-                "values": pvpc
-            }
         }
     ]
 }
+
+get_pvpc_mock = MagicMock()
+get_pvpc_mock.status_code = 200
+
+pvpc = [
+    {
+        "Dia": now.strftime("%d/%m/%Y"),
+        "Hora": str.zfill(str(i), 2) + "-" + str.zfill(str(i + 1), 2),
+        "PCB": "100,25",
+        "CYM": "150"
+    }
+    for i in range(24)
+]
+
+get_pvpc_mock.json.return_value = {
+    "PVPC": pvpc
+}
+
+
+def requests_get(url: str) -> Any:
+    """`requests.get` mock function.
+
+    :param url: Request URL.
+    :return: Request response.
+    """
+    if url.startswith("https://apidatos.ree.es/"):
+        return get_spot_mock
+    elif url.startswith("https://api.esios.ree.es/"):
+        return get_pvpc_mock
+    else:
+        raise Exception("Invalid URL")
+
+
+get_mock = MagicMock()
+get_mock.side_effect = requests_get
 
 
 # "userconf.settings.SettingsManager" mock
