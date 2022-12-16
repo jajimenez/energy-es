@@ -12,11 +12,11 @@ class PricesManager:
 
     This class gets the hourly values of the Spot Market and PVPC energy prices
     of the current day in Spain. The data is cached in a configuration file
-    inside the user's home directory. The data is provided by two APIs of "Red
+    inside the user's home directory. The data is provided by some APIs of "Red
     Eléctrica de España".
 
-    The values are stored in €/MWh but can be returned by the in either €/kWh
-    or €/MWh.
+    The values are stored in €/MWh but can be returned in either €/kWh or
+    €/MWh by the `get_prices` method.
     """
 
     # Red Eléctrica API for Spot Market prices. Prices are the same for whole
