@@ -1,16 +1,18 @@
 """Energy-ES - User Interface - Chart."""
 
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 from userconf import UserConf
 
 from energy_es.data.prices import PricesManager
-from energy_es.data.tools import get_time
 
 
-APP_ID = "energy_es"
-UNIT_LABELS = {"k": "€/KWh", "m": "€/MWh"}
+# UserConf application ID
+UC_APP_ID = "energy_es"
 
 MESSAGE_HTML = (
     '<!DOCTYPE html>'
@@ -46,57 +48,38 @@ def _write_chart(unit: str, path: str):
     to have them in €/MWh.
     :param path: Destination file path.
     """
-    unit = unit.lower()
-
-    # Check units
-    if unit not in ("k", "m"):
-        raise Exception('Invalid unit. It must be "k" (€/KWh) or "m" (€/MWh)')
-
-    unit_label = UNIT_LABELS[unit]
-
     # Get data
     pm = PricesManager()
-    spot = pm.get_spot_market_prices(unit)
-    pvpc = pm.get_pvpc_prices(unit)
+    prices = pm.get_prices(unit)
 
-    # Transform data
-    prices = []
-
-    for i in (spot, pvpc):
-        i2 = list(map(
-            lambda x: {
-                "time": get_time(x["datetime"]),
-                "value": x["value"]
-            },
-            i
-        ))
-
-        prices.append(i2)
-
-    spot_2, pvpc_2 = prices
+    updated = prices["updated"]
+    price_unit = prices["price_unit"]
+    data = prices["data"]
 
     # Title and source
-    dt = spot[0]["datetime"]
+    dt = datetime.fromtimestamp(updated).astimezone(ZoneInfo("Europe/Madrid"))
     dt = dt.strftime(f"%A {dt.day} %B %Y (%Z)")
 
-    title = f"Electricity price ({unit_label}) in Spain for {dt}"
+    title = f"Electricity price ({price_unit}) in Spain for {dt}"
     source = "Data source: Red Eléctrica de España"
 
-    # Create dataframes
-    spot_df = pd.DataFrame(spot_2)
-    pvpc_df = pd.DataFrame(pvpc_2)
+    # Create dataframe
+    prices_df = pd.DataFrame(data)
 
     text = ["<b>MIN</b>", "<b>MAX</b>"]
     text_pos = ["bottom center", "top center"]
 
-    for df in (spot_df, pvpc_df):
+    for c in ("spot_market", "pvpc_pcb", "pvpc_cm"):
         cond = [
-            df["value"] == df["value"].min(),
-            df["value"] == df["value"].max()
+            prices_df[c] == prices_df[c].min(),
+            prices_df[c] == prices_df[c].max()
         ]
 
-        df["text"] = np.select(cond, text, default=None)
-        df["text_position"] = np.select(cond, text_pos, default="top center")
+        prices_df[f"{c}_text"] = np.select(cond, text, default=None)
+
+        prices_df[f"{c}_text_position"] = (
+            np.select(cond, text_pos, default="top center")
+        )
 
     # Create chart
     fig = go.Figure()
@@ -124,7 +107,7 @@ def _write_chart(unit: str, path: str):
             "tickangle": 45
         },
         yaxis={
-            "title": unit_label,
+            "title": price_unit,
             "fixedrange": True,
             "showline": True,
             "mirror": True,
@@ -136,41 +119,61 @@ def _write_chart(unit: str, path: str):
         margin={"t": 65}
     )
 
-    hover_tem = "Time: &nbsp;%{x}<br>Price: &nbsp;%{y} " + unit_label
+    hover_tem = "Time: &nbsp;%{x}<br>Price: &nbsp;%{y} " + price_unit
     spot_hover_tem = "<b>Spot Market</b><br>" + hover_tem
-    pvpc_hover_tem = "<b>PVPC</b><br>" + hover_tem
+
+    pvpc_pcb_hover_tem = (
+        "<b>PVPC (Peninsula, Canarias and Baleares)</b><br>" + hover_tem
+    )
+
+    pvpc_cm_hover_tem = "<b>PVPC (Ceuta and Melilla)</b><br>" + hover_tem
 
     # Spot market prices
     spot_sca = go.Scatter(
-        x=spot_df["time"],
-        y=spot_df["value"],
+        x=prices_df["time"],
+        y=prices_df["spot_market"],
         mode="lines+markers+text",
-        text=spot_df["text"],
+        text=prices_df["spot_market_text"],
         line={"width": 3, "color": "#2077b4"},
         marker={"size": 12, "color": "#2077b4"},
-        textposition=spot_df["text_position"],
+        textposition=prices_df["spot_market_text_position"],
         textfont={"color": "#2077b4"},
         name="Spot Market price",
         hovertemplate=spot_hover_tem,
         hoverlabel={"namelength": 0}
     )
 
-    # PVPC prices
-    pvpc_sca = go.Scatter(
-        x=pvpc_df["time"],
-        y=pvpc_df["value"],
+    # PVPC prices (Peninsula, Canarias and Baleares)
+    pvpc_pcb_sca = go.Scatter(
+        x=prices_df["time"],
+        y=prices_df["pvpc_pcb"],
         mode="lines+markers+text",
-        text=pvpc_df["text"],
+        text=prices_df["pvpc_pcb_text"],
         line={"width": 3, "color": "#ff8c00"},
         marker={"size": 12, "color": "#ff8c00"},
-        textposition=pvpc_df["text_position"],
+        textposition=prices_df["pvpc_pcb_text_position"],
         textfont={"color": "#ff8c00"},
-        name="PVPC price",
-        hovertemplate=pvpc_hover_tem,
+        name="PVPC price<br>(Peninsula, Canarias<br>and Baleares)",
+        hovertemplate=pvpc_pcb_hover_tem,
         hoverlabel={"namelength": 0}
     )
 
-    fig.add_traces([pvpc_sca, spot_sca])
+    # PVPC prices (Ceuta and Melilla)
+    pvpc_cm_sca = go.Scatter(
+        x=prices_df["time"],
+        y=prices_df["pvpc_cm"],
+        mode="lines+markers+text",
+        text=prices_df["pvpc_cm_text"],
+        line={"width": 3, "color": "#00a002"},
+        marker={"size": 12, "color": "#00a002"},
+        textposition=prices_df["pvpc_cm_text_position"],
+        textfont={"color": "#00a002"},
+        name="<br>PVPC price<br>(Ceuta and Melilla)<br>",
+        hovertemplate=pvpc_cm_hover_tem,
+        hoverlabel={"namelength": 0}
+    )
+
+    fig.add_traces([spot_sca, pvpc_cm_sca, pvpc_pcb_sca])
     conf = {"displayModeBar": False}
 
     # Write chart
@@ -185,7 +188,7 @@ def get_chart_path(unit: str = "m") -> str:
     (default) to have them in €/MWh.
     :return: Absolute path of the chart file.
     """
-    uc = UserConf(APP_ID)
+    uc = UserConf(UC_APP_ID)
 
     path = uc.files.get_path("chart.html")
     _write_chart(unit, path)
