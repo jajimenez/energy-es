@@ -44,7 +44,7 @@ def get_message_html(title: str, message: str = "") -> str:
 def _write_chart(unit: str, path: str):
     """Generate and write the chart HTML page with updated data.
 
-    :param unit: Prices unit. It must be "k" to have the prices in €/KWh or "m"
+    :param unit: Prices unit. It must be "k" to have the prices in €/kWh or "m"
     to have them in €/MWh.
     :param path: Destination file path.
     """
@@ -184,7 +184,7 @@ def get_chart_path(unit: str = "m") -> str:
     """Generate and write the chart HTML page with updated data and get its
     path.
 
-    :param unit: Prices unit. It must be "k" to have the prices in €/KWh or "m"
+    :param unit: Prices unit. It must be "k" to have the prices in €/kWh or "m"
     (default) to have them in €/MWh.
     :return: Absolute path of the chart file.
     """

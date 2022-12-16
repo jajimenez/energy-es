@@ -47,36 +47,19 @@ class MainWidget(QWidget):
         self._unit_lab = QLabel(text="Prices unit:")
 
         self._layout_2.addWidget(
-            self._unit_lab,
-            alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop
+            self._unit_lab, alignment=Qt.AlignmentFlag.AlignLeft
         )
 
         # Unit combo box
         self._unit_combo = QComboBox()
         self._unit_combo.setFixedWidth(150)
-        self._unit_combo.addItems(["€/KWh", "€/MWh"])
+        self._unit_combo.addItems(["€/kWh", "€/MWh"])
         self._unit_combo.currentIndexChanged.connect(self.on_unit_changed)
 
         self._layout_2.addWidget(
             self._unit_combo, stretch=True,
-            alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop
+            alignment=Qt.AlignmentFlag.AlignLeft
         )
-
-        # Note label
-        note = (
-            "Note: The variables shown in the chart do not represent final "
-            "prices for consumers. There are more variables that determine "
-            "final prices."
-        )
-
-        sp = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-
-        self._note_lab = QLabel(text=note)
-        self._note_lab.setFixedWidth(420)
-        self._note_lab.setSizePolicy(sp)
-        self._note_lab.setWordWrap(True)
-
-        self._layout_2.addWidget(self._note_lab)
 
         # Initial chart generation
         self.update_chart("k")
@@ -84,7 +67,7 @@ class MainWidget(QWidget):
     def update_chart(self, unit: str):
         """Update the chart widget.
 
-        :param unit: Prices unit. It must be "k" to have the prices in €/KWh or
+        :param unit: Prices unit. It must be "k" to have the prices in €/kWh or
         "m" to have them in €/MWh.
         """
         def on_success(path: str):

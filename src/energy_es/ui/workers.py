@@ -19,7 +19,7 @@ class ChartWorker(QObject):
     def __init__(self, unit: str):
         """Initialize the instance.
 
-        :param unit: Prices unit. It must be "k" to have the prices in €/KWh or
+        :param unit: Prices unit. It must be "k" to have the prices in €/kWh or
         "m" to have them in €/MWh.
         """
         super().__init__()

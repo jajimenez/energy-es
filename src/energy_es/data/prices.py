@@ -15,7 +15,7 @@ class PricesManager:
     inside the user's home directory. The data is provided by two APIs of "Red
     Eléctrica de España".
 
-    The values are stored in €/MWh but can be returned by the in either €/KWh
+    The values are stored in €/MWh but can be returned by the in either €/kWh
     or €/MWh.
     """
 
@@ -294,7 +294,7 @@ class PricesManager:
         """Return the hourly energy prices (of either Spot Market or PVPC) of
         the current day in Spain.
 
-        :param unit: Prices unit. It must be "k" to return the prices in €/KWh
+        :param unit: Prices unit. It must be "k" to return the prices in €/kWh
         or "m" (default) to return them in €/MWh.
         :return: Sorted list of 24 dictionaries, each one for a different hour
         of the day. Each dictionary has four keys named "hour, "spot_market",
@@ -308,7 +308,7 @@ class PricesManager:
         # Check units
         if unit not in ("k", "m"):
             raise Exception(
-                'Invalid unit. It must be "k" (€/KWh) or "m" (€/MWh)'
+                'Invalid unit. It must be "k" (€/kWh) or "m" (€/MWh)'
             )
 
         # Check whether data is valid and update it if not
@@ -329,8 +329,8 @@ class PricesManager:
                 self._prices["data"]
             ))
         else:
-            # Deep copy of "self._prices["data"]" with the prices in €/KWh
-            price_unit = "€/KWh"
+            # Deep copy of "self._prices["data"]" with the prices in €/kWh
+            price_unit = "€/kWh"
 
             data = list(map(
                 lambda x: {
